@@ -12,16 +12,20 @@ type Model struct {
 
 	Size tea.WindowSizeMsg
 
-	Buffer    buffer.Buffer
-	Line, Col int
+	Buffer  buffer.Buffer
+	BufView *buffer.View
+	Cursor  *buffer.Cursor
 }
 
 func NewModel() Model {
-	return Model{
+	m := Model{
 		Cancel: key.NewBinding(
 			key.WithKeys("ctrl+c"),
 		),
 	}
+	m.BufView = m.Buffer.View(0, 0)
+	m.Cursor = m.BufView.Cursor(0, 0)
+	return m
 }
 
 func (m Model) Init() tea.Cmd {
@@ -34,6 +38,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.onKeyMsg(msg)
 	case tea.WindowSizeMsg:
 		m.Size = msg
+		m.BufView.Resize(msg.Height - 4)
 	}
 
 	return m, nil
@@ -45,20 +50,15 @@ func (m Model) onKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 
-	c := m.Buffer.Cursor(m.Line, m.Col)
 	switch msg.Type {
 	case tea.KeyRunes, tea.KeySpace:
-		c.Write([]byte(string(msg.Runes)))
-		m.Line, m.Col = c.LineAndCol()
+		m.Cursor.Write([]byte(string(msg.Runes)))
 	case tea.KeyEnter:
-		m.Buffer.Cursor(m.Line, m.Col).WriteByte('\n')
-		m.Line, m.Col = c.LineAndCol()
+		m.Cursor.WriteByte('\n')
 	case tea.KeyTab:
-		m.Buffer.Cursor(m.Line, m.Col).WriteByte('\t')
-		m.Line, m.Col = c.LineAndCol()
+		m.Cursor.WriteByte('\t')
 	case tea.KeyBackspace:
-		m.Buffer.Cursor(m.Line, m.Col).Delete(-1)
-		m.Line, m.Col = c.LineAndCol()
+		m.Cursor.Delete(-1)
 	}
 
 	return m, nil
@@ -73,5 +73,5 @@ func (m Model) View() string {
 		Width(m.Size.Width-2).
 		Height(m.Size.Height-2).
 		Border(lipgloss.RoundedBorder(), true).
-		Render(string(m.Buffer.View(0, m.Size.Height-4)))
+		Render(m.BufView.String())
 }
