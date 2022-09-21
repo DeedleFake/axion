@@ -70,6 +70,5 @@ func (m Model) View() string {
 		Width(m.Size.Width-2).
 		Height(m.Size.Height-2).
 		Border(lipgloss.RoundedBorder(), true).
-		Align(.5, .5).
 		Render(string(m.Buffer.View(0, m.Size.Height-4)))
 }
