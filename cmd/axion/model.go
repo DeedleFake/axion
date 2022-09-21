@@ -12,7 +12,8 @@ type Model struct {
 
 	Size tea.WindowSizeMsg
 
-	Buffer buffer.Buffer
+	Buffer    buffer.Buffer
+	Line, Col int
 }
 
 func NewModel() Model {
@@ -44,14 +45,17 @@ func (m Model) onKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 
+	c := m.Buffer.Cursor(m.Line, m.Col)
 	switch msg.Type {
 	case tea.KeyRunes, tea.KeySpace:
-		m.Buffer.Write([]byte(string(msg.Runes)))
-		return m, nil
+		c.Write([]byte(string(msg.Runes)))
+		m.Line, m.Col = c.LineAndCol()
 	case tea.KeyEnter:
-		m.Buffer.WriteByte('\n')
+		m.Buffer.Cursor(m.Line, m.Col).WriteByte('\n')
+		m.Line, m.Col = c.LineAndCol()
 	case tea.KeyTab:
-		m.Buffer.WriteByte('\t')
+		m.Buffer.Cursor(m.Line, m.Col).WriteByte('\t')
+		m.Line, m.Col = c.LineAndCol()
 	}
 
 	return m, nil
