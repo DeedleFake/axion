@@ -1,16 +1,21 @@
 package main
 
 import (
+	"strings"
+
 	"deedles.dev/axion/buffer"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 type Model struct {
 	Cancel key.Binding
 
-	Size tea.WindowSizeMsg
+	Size        tea.WindowSizeMsg
+	WinStyle    lipgloss.Style
+	CursorStyle lipgloss.Style
 
 	Buffer  buffer.Buffer
 	BufView *buffer.View
@@ -22,9 +27,17 @@ func NewModel() Model {
 		Cancel: key.NewBinding(
 			key.WithKeys("ctrl+c"),
 		),
+
+		WinStyle: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder(), true),
+		CursorStyle: lipgloss.NewStyle().Inline(true).
+			Foreground(lipgloss.Color(termenv.BackgroundColor().Sequence(false))).
+			Background(lipgloss.Color(termenv.ForegroundColor().Sequence(false))),
 	}
+
 	m.BufView = m.Buffer.View(0, 0)
 	m.Cursor = m.BufView.Cursor(0, 0)
+
 	return m
 }
 
@@ -38,6 +51,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.onKeyMsg(msg)
 	case tea.WindowSizeMsg:
 		m.Size = msg
+		m.WinStyle.Width(msg.Width - 2).Height(msg.Height - 2)
 		m.BufView.Resize(msg.Height - 4)
 	}
 
@@ -69,9 +83,13 @@ func (m Model) View() string {
 		return ""
 	}
 
-	return lipgloss.NewStyle().
-		Width(m.Size.Width-2).
-		Height(m.Size.Height-2).
-		Border(lipgloss.RoundedBorder(), true).
-		Render(m.BufView.String())
+	var view strings.Builder
+
+	{
+		cursor := m.CursorStyle.Render(" ")
+		win := m.WinStyle.Render(m.BufView.String() + cursor)
+		view.WriteString(win)
+	}
+
+	return view.String()
 }
