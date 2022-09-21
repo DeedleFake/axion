@@ -1,35 +1,10 @@
 // Package buffer implements a data buffer useful for editing UTF-8 encoded text.
 package buffer
 
-import (
-	"deedles.dev/axion/internal/util"
-)
-
 // A Buffer holds data for manipulation. Its zero value is ready to
 // use.
 type Buffer struct {
-	data  []rune
-	lines []int
-}
-
-func (b *Buffer) updateLines() {
-	b.lines = b.lines[:0]
-	b.lines = append(b.lines, 0)
-	for i, c := range b.data {
-		if c != '\n' {
-			continue
-		}
-
-		b.lines = append(b.lines, i+1)
-	}
-	b.lines = append(b.lines, len(b.data))
-}
-
-func (b *Buffer) Cursor(line, col int) *Cursor {
-	return &Cursor{
-		buf: b,
-		loc: b.indexByLineAndCol(line, col),
-	}
+	data []rune
 }
 
 // View returns a slice of the data in the buffer starting at the
@@ -44,33 +19,52 @@ func (b *Buffer) View(start, length int) []rune {
 	return b.data[si:ei:ei]
 }
 
-func (b *Buffer) NumLines() int {
-	return util.Max(len(b.lines)-1, 0)
-}
-
 // sliceByLines returns the start and end indices into b.data that
 // begins at the line with the given index and is at least length
 // lines long.
 func (b *Buffer) sliceByLines(start, length int) (i1, i2 int) {
-	if len(b.lines) == 0 {
-		return 0, 0
+	i1 = b.lineIndex(start)
+
+	line := start + length
+	for i, c := range b.data[i1:] {
+		if line == 0 {
+			return i1, i
+		}
+
+		if c == '\n' {
+			line--
+		}
 	}
 
-	if start+length >= len(b.lines) {
-		start = len(b.lines) - length
-	}
-	if start < 0 {
-		start = 0
-	}
-
-	return b.lines[start], b.lines[util.Min(start+length, len(b.lines)-1)]
+	return i1, len(b.data)
 }
 
-func (b Buffer) indexByLineAndCol(line, col int) int {
-	if len(b.lines) == 0 {
-		return 0
+func (b *Buffer) lineIndex(line int) int {
+	for i, c := range b.data {
+		if line == 0 {
+			return i
+		}
+
+		if c == '\n' {
+			line--
+		}
 	}
 
-	i := b.lines[util.Min(line, len(b.lines)-1)]
-	return util.Min(len(b.data)-1, i+col)
+	return len(b.data)
+}
+
+func (b *Buffer) lineOfIndex(i int) (line, beginning int) {
+	if i >= len(b.data) {
+		i = len(b.data) - 1
+	}
+
+	for ; i >= 0; i-- {
+		if b.data[i] == '\n' {
+			line++
+			if beginning == 0 {
+				beginning = i + 1
+			}
+		}
+	}
+	return line, beginning
 }
