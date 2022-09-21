@@ -23,6 +23,50 @@ func (c *Cursor) Location() int {
 	return c.loc
 }
 
+func (c *Cursor) Move(by int) {
+	c.loc = util.Contain(0, len(c.buf.data), c.loc+by)
+}
+
+func (c *Cursor) MoveTo(i int) {
+	c.loc = util.Contain(0, len(c.buf.data), i)
+}
+
+func (c *Cursor) MoveLines(num int) {
+	if num < 0 {
+		c.moveLinesUp(-num)
+		return
+	}
+	c.moveLinesDown(num)
+}
+
+func (c *Cursor) moveLinesUp(num int) {
+	// TODO: There has got to be a better way to do this...
+	var col int
+	for i := c.loc - 1; i >= 0; i-- {
+		if num == 0 {
+			c.loc = i + col
+			for i2 := i + 1; i2 < c.loc; i2++ {
+				if c.buf.data[i2] == '\n' {
+					c.loc = i2
+					break
+				}
+			}
+			return
+		}
+
+		if c.buf.data[i] == '\n' {
+			num--
+			if col == 0 {
+				col = c.loc - (i + 1)
+			}
+		}
+	}
+}
+
+func (c *Cursor) moveLinesDown(num int) {
+	panic("Not implemented.")
+}
+
 func (c *Cursor) LineAndCol() (line, col int) {
 	line, beginning := c.buf.lineOfIndex(c.loc)
 	return line, c.loc - beginning
