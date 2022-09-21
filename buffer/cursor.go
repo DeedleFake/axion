@@ -85,3 +85,19 @@ func (c *Cursor) WriteByte(char byte) error {
 	c.loc++
 	return nil
 }
+
+// Delete deletes n characters starting at the cursor's current
+// location. If n is negative, it deletes backwards. The final cursor
+// location is the index of the first character deleted.
+func (c *Cursor) Delete(n int) int {
+	start := c.loc
+	end := c.loc + n
+	if end < start {
+		start, end = end, start
+		c.loc = start
+	}
+
+	before := len(c.buf.data)
+	c.buf.data = slices.Delete(c.buf.data, start, end)
+	return before - len(c.buf.data)
+}
