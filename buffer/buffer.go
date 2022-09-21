@@ -7,15 +7,11 @@ import (
 	"deedles.dev/axion/internal/util"
 )
 
-// A Buffer holds data for manipulation.
+// A Buffer holds data for manipulation. Its zero value is ready to
+// use.
 type Buffer struct {
 	data  []rune
 	lines []int
-}
-
-// New returns a new empty buffer.
-func New() *Buffer {
-	return &Buffer{}
 }
 
 func (b *Buffer) updateLines() {
@@ -28,6 +24,7 @@ func (b *Buffer) updateLines() {
 
 		b.lines = append(b.lines, i+1)
 	}
+	b.lines = append(b.lines, len(b.data))
 }
 
 // Write writes data into the buffer.
@@ -35,6 +32,12 @@ func (b *Buffer) Write(data []byte) (int, error) {
 	b.data = append(b.data, bytes.Runes(data)...)
 	b.updateLines()
 	return len(data), nil
+}
+
+func (b *Buffer) WriteByte(c byte) error {
+	b.data = append(b.data, rune(c))
+	b.updateLines()
+	return nil
 }
 
 // View returns a slice of the data in the buffer starting at the
@@ -53,6 +56,10 @@ func (b *Buffer) View(start, length int) []rune {
 // begins at the line with the given index and is at least length
 // lines long.
 func (b *Buffer) sliceByLines(start, length int) (i1, i2 int) {
+	if len(b.lines) == 0 {
+		return 0, 0
+	}
+
 	if start+length >= len(b.lines) {
 		start = len(b.lines) - length
 	}
