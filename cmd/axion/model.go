@@ -1,6 +1,7 @@
 package main
 
 import (
+	"deedles.dev/axion/buffer"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -8,7 +9,10 @@ import (
 
 type Model struct {
 	Cancel key.Binding
-	Size   tea.WindowSizeMsg
+
+	Size tea.WindowSizeMsg
+
+	Buffer buffer.Buffer
 }
 
 func NewModel() Model {
@@ -40,14 +44,28 @@ func (m Model) onKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 
+	switch msg.Type {
+	case tea.KeyRunes, tea.KeySpace:
+		m.Buffer.Write([]byte(string(msg.Runes)))
+		return m, nil
+	case tea.KeyEnter:
+		m.Buffer.WriteByte('\n')
+	case tea.KeyTab:
+		m.Buffer.WriteByte('\t')
+	}
+
 	return m, nil
 }
 
 func (m Model) View() string {
+	if (m.Size.Width == 0) || (m.Size.Height == 0) {
+		return ""
+	}
+
 	return lipgloss.NewStyle().
 		Width(m.Size.Width-2).
 		Height(m.Size.Height-2).
 		Border(lipgloss.RoundedBorder(), true).
 		Align(.5, .5).
-		Render("Alright.\nThat's pretty neat.")
+		Render(string(m.Buffer.View(0, m.Size.Height-4)))
 }
