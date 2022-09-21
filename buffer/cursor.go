@@ -87,8 +87,15 @@ func (c *Cursor) Delete(n int) int {
 	end := c.loc + n
 	if end < start {
 		start, end = end, start
-		c.loc = start
 	}
+	if start < 0 {
+		start = 0
+	}
+	if end > len(c.view.buf.data) {
+		end = len(c.view.buf.data)
+	}
+
+	c.loc = start
 
 	before := len(c.view.buf.data)
 	c.view.buf.data = slices.Delete(c.view.buf.data, start, end)
