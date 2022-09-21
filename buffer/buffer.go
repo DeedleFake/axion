@@ -14,14 +14,17 @@ type Buffer struct {
 // data in the buffer.
 //
 // Note that line numbers begin at 0, not 1.
-func (b *Buffer) View(start, length int) []rune {
-	si, ei := b.sliceByLines(start, length)
-	return b.data[si:ei:ei]
+func (b *Buffer) View(start, length int) *View {
+	return &View{
+		buf:    b,
+		start:  start,
+		length: length,
+	}
 }
 
 // sliceByLines returns the start and end indices into b.data that
-// begins at the line with the given index and is at least length
-// lines long.
+// begins at the line with the given index and is at most length lines
+// long.
 func (b *Buffer) sliceByLines(start, length int) (i1, i2 int) {
 	i1 = b.lineIndex(start)
 
