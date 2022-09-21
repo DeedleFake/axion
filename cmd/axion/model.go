@@ -56,6 +56,9 @@ func (m Model) onKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case tea.KeyTab:
 		m.Buffer.Cursor(m.Line, m.Col).WriteByte('\t')
 		m.Line, m.Col = c.LineAndCol()
+	case tea.KeyBackspace:
+		m.Buffer.Cursor(m.Line, m.Col).Delete(-1)
+		m.Line, m.Col = c.LineAndCol()
 	}
 
 	return m, nil
