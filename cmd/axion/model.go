@@ -10,6 +10,17 @@ import (
 	"github.com/muesli/termenv"
 )
 
+var winBorder = lipgloss.Border{
+	Top:         "─",
+	Bottom:      "─",
+	Left:        "│",
+	Right:       "│",
+	TopLeft:     "□",
+	TopRight:    "┐",
+	BottomLeft:  "└",
+	BottomRight: "┘",
+}
+
 type Model struct {
 	Cancel key.Binding
 
@@ -29,7 +40,7 @@ func NewModel() Model {
 		),
 
 		WinStyle: lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder(), true),
+			Border(winBorder, true),
 		CursorStyle: lipgloss.NewStyle().Inline(true).
 			Foreground(lipgloss.Color(termenv.BackgroundColor().Sequence(false))).
 			Background(lipgloss.Color(termenv.ForegroundColor().Sequence(false))),
