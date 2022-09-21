@@ -16,3 +16,13 @@ func Max[T constraints.Ordered](v1, v2 T) T {
 	}
 	return v2
 }
+
+func Contain[T constraints.Ordered](min, max, v T) T {
+	if v < min {
+		return min
+	}
+	if v > max {
+		return max
+	}
+	return v
+}
