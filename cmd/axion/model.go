@@ -96,8 +96,13 @@ func (m Model) View() string {
 	var view strings.Builder
 
 	{
-		cursor := m.CursorStyle.Render(" ")
-		win := m.WinStyle.Render(m.BufView.String() + cursor)
+		str := lipgloss.StyleRunes(
+			m.BufView.String()+" ",
+			[]int{m.Cursor.Location()},
+			m.CursorStyle,
+			lipgloss.NewStyle(),
+		)
+		win := m.WinStyle.Render(str)
 		view.WriteString(win)
 	}
 
