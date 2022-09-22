@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strings"
-
 	"deedles.dev/axion/buffer"
 	"deedles.dev/axion/theme"
 	"github.com/charmbracelet/bubbles/key"
@@ -23,9 +21,12 @@ var winBorder = lipgloss.Border{
 
 type Model struct {
 	Cancel key.Binding
+	Left   key.Binding
+	Right  key.Binding
 
 	Size        tea.WindowSizeMsg
 	WinStyle    lipgloss.Style
+	TextStyle   lipgloss.Style
 	CursorStyle lipgloss.Style
 
 	Buffer  buffer.Buffer
@@ -38,9 +39,16 @@ func NewModel() Model {
 		Cancel: key.NewBinding(
 			key.WithKeys("ctrl+c"),
 		),
+		Left: key.NewBinding(
+			key.WithKeys("left"),
+		),
+		Right: key.NewBinding(
+			key.WithKeys("right"),
+		),
 
 		WinStyle: theme.Default().Editor().
 			Border(winBorder, true),
+		TextStyle: theme.Default().Editor().Inline(true),
 		CursorStyle: theme.Default().Editor().Inline(true).
 			Reverse(true),
 	}
@@ -72,6 +80,12 @@ func (m Model) onKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, m.Cancel):
 		return m, tea.Quit
+	case key.Matches(msg, m.Left):
+		m.Cursor.Move(-1)
+		return m, nil
+	case key.Matches(msg, m.Right):
+		m.Cursor.Move(1)
+		return m, nil
 	}
 
 	switch msg.Type {
@@ -93,18 +107,13 @@ func (m Model) View() string {
 		return ""
 	}
 
-	var view strings.Builder
+	str := lipgloss.StyleRunes(
+		m.BufView.String()+" ",
+		[]int{m.Cursor.Location()},
+		m.CursorStyle,
+		m.TextStyle,
+	)
+	win := m.WinStyle.Render(str)
 
-	{
-		str := lipgloss.StyleRunes(
-			m.BufView.String()+" ",
-			[]int{m.Cursor.Location()},
-			m.CursorStyle,
-			lipgloss.NewStyle(),
-		)
-		win := m.WinStyle.Render(str)
-		view.WriteString(win)
-	}
-
-	return view.String()
+	return win
 }
