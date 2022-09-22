@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	"deedles.dev/axion/buffer"
+	"deedles.dev/axion/theme"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
 )
 
 var winBorder = lipgloss.Border{
@@ -39,11 +39,10 @@ func NewModel() Model {
 			key.WithKeys("ctrl+c"),
 		),
 
-		WinStyle: lipgloss.NewStyle().
+		WinStyle: theme.Default().Editor().
 			Border(winBorder, true),
-		CursorStyle: lipgloss.NewStyle().Inline(true).
-			Foreground(lipgloss.Color(termenv.BackgroundColor().Sequence(false))).
-			Background(lipgloss.Color(termenv.ForegroundColor().Sequence(false))),
+		CursorStyle: theme.Default().Editor().Inline(true).
+			Reverse(true),
 	}
 
 	m.BufView = m.Buffer.View(0, 0)
