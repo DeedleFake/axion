@@ -33,36 +33,39 @@ func (c *Cursor) MoveLines(num int) {
 }
 
 func (c *Cursor) moveLinesUp(num int) {
-	data := c.view.buf.data[:c.loc]
+	data := c.view.buf.data
+
+	lineend := c.loc
 	col := -1
-	for (len(data) > 0) && (num >= 0) {
-		end := util.LastIndex(data, '\n')
+
+	for (lineend > 0) && (num >= 0) {
+		lineend = util.LastIndex(data[:lineend], '\n')
 		if col < 0 {
-			col = c.loc - (end + 1)
+			col = c.loc - lineend
 		}
 		num--
-		data = data[:util.Max(end, 0)]
 	}
 
-	linelen := slices.Index(c.view.buf.data[len(data):], '\n')
-	c.loc = len(data) + util.Min(col, linelen)
+	linelen := util.MaxIndex(c.view.buf.data[lineend+1:], '\n') + 1
+	c.loc = lineend + util.Min(col, linelen)
 }
 
 func (c *Cursor) moveLinesDown(num int) {
-	data := c.view.buf.data[c.loc:]
-	for (len(data) > 0) && (num >= 0) {
-		end := slices.Index(data, '\n')
-		if end < 0 {
-			end = len(data)
-		}
+	data := c.view.buf.data
+
+	linestart := util.LastIndex(data[:c.loc], '\n') + 1
+	col := c.loc - linestart
+
+	for (linestart < len(data)) && (num > 0) {
+		linestart = linestart + util.MaxIndex(data[linestart:], '\n') + 1
 		num--
-		data = data[util.Min(end+1, len(data)):]
+	}
+	if linestart >= len(data) {
+		return
 	}
 
-	start := len(c.view.buf.data) - len(data)
-	col := c.loc - (util.LastIndex(c.view.buf.data[:c.loc], '\n') + 1)
-	linelen := util.MaxIndex(c.view.buf.data[start:], '\n')
-	c.loc = start + util.Min(col, linelen)
+	linelen := util.MaxIndex(c.view.buf.data[linestart:], '\n')
+	c.loc = linestart + util.Min(col, linelen)
 }
 
 func (c *Cursor) LineAndCol() (line, col int) {
