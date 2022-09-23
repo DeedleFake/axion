@@ -2,11 +2,6 @@ package theme
 
 import "github.com/charmbracelet/lipgloss"
 
-func init() {
-	// Make sure that this is queried before the bubbletea loop starts.
-	lipgloss.HasDarkBackground()
-}
-
 func c(str string) lipgloss.Color {
 	return lipgloss.Color(str)
 }
