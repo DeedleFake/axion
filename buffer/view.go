@@ -1,6 +1,8 @@
 package buffer
 
 import (
+	"strings"
+
 	"deedles.dev/axion/internal/util"
 	"golang.org/x/exp/slices"
 )
@@ -20,6 +22,11 @@ func (v *View) Cursor(line, col int) *Cursor {
 func (v *View) String() string {
 	i1, i2 := v.buf.sliceByLines(v.start, v.length)
 	return string(v.buf.data[i1:i2])
+}
+
+func (v *View) Lines() []string {
+	i1, i2 := v.buf.sliceByLines(v.start, v.length)
+	return strings.Split(string(v.buf.data[i1:i2]), "\n")
 }
 
 func (v *View) Runes() []rune {

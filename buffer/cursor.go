@@ -33,25 +33,19 @@ func (c *Cursor) MoveLines(num int) {
 }
 
 func (c *Cursor) moveLinesUp(num int) {
-	// TODO: There has got to be a better way to do this...
 	var col int
-	for i := c.loc - 1; i >= 0; i-- {
-		if num == 0 {
-			c.loc = i + col
-			for i2 := i + 1; i2 < c.loc; i2++ {
-				if c.view.buf.data[i2] == '\n' {
-					c.loc = i2
-					break
-				}
-			}
-			return
-		}
-
-		if c.view.buf.data[i] == '\n' {
+	for i := c.loc; i >= 0; i-- {
+		r := c.view.buf.data[i]
+		if r == '\n' {
 			num--
 			if col == 0 {
-				col = c.loc - (i + 1)
+				col = c.loc - i
 			}
+		}
+
+		if num == 0 {
+			c.loc = i + col
+			return
 		}
 	}
 }

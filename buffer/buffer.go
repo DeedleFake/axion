@@ -58,10 +58,10 @@ func (b *Buffer) lineIndex(line int) int {
 
 func (b *Buffer) lineOfIndex(i int) (line, beginning int) {
 	if i >= len(b.data) {
-		i = len(b.data) - 1
+		i = len(b.data)
 	}
 
-	for ; i >= 0; i-- {
+	for i := i - 1; i >= 0; i-- {
 		if b.data[i] == '\n' {
 			line++
 			if beginning == 0 {
