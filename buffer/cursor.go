@@ -38,7 +38,7 @@ func (c *Cursor) moveLinesUp(num int) {
 	lineend := c.loc
 	col := -1
 
-	for (lineend > 0) && (num >= 0) {
+	for (lineend >= 0) && (num >= 0) {
 		lineend = util.LastIndex(data[:lineend], '\n')
 		if col < 0 {
 			col = c.loc - lineend
@@ -46,7 +46,7 @@ func (c *Cursor) moveLinesUp(num int) {
 		num--
 	}
 
-	linelen := util.MaxIndex(c.view.buf.data[lineend+1:], '\n') + 1
+	linelen := util.MaxIndex(data[lineend+1:], '\n') + 1
 	c.loc = lineend + util.Min(col, linelen)
 }
 
@@ -64,7 +64,7 @@ func (c *Cursor) moveLinesDown(num int) {
 		return
 	}
 
-	linelen := util.MaxIndex(c.view.buf.data[linestart:], '\n')
+	linelen := util.MaxIndex(data[linestart:], '\n')
 	c.loc = linestart + util.Min(col, linelen)
 }
 
