@@ -26,3 +26,21 @@ func Contain[T constraints.Ordered](min, max, v T) T {
 	}
 	return v
 }
+
+func LastIndex[S ~[]E, E comparable](s S, v E) int {
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == v {
+			return i
+		}
+	}
+	return -1
+}
+
+func MaxIndex[S ~[]E, E comparable](s S, v E) int {
+	for i, e := range s {
+		if e == v {
+			return i
+		}
+	}
+	return len(s)
+}
